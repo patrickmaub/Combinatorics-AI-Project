@@ -21,13 +21,30 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 
 @st.cache
-def solve_problem(user_prompt):
+def label_problem(problem, user_prompt):
 
     response = openai.Completion.create(
         model="text-davinci-003",
         prompt=user_prompt,
         temperature=0.5,
-        max_tokens=256,
+        max_tokens=512,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0)
+
+    return solve_problem(
+
+        'Solve the following problem by giving an answer followed by a brief explanation: ' + problem + '\n The problem can be solved using ' + response['choices'][0]['text'] + '.\n Answer:')
+
+
+@st.cache
+def solve_problem(user_prompt):
+
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=user_prompt,
+        temperature=0.3,
+        max_tokens=512,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0)
@@ -49,21 +66,21 @@ def generate_problem(user_prompt):
 
 
 header = st.header('Combinatorics Final Project')
-text = st.text_area('Solve a combinatorics word problem')
+text = st.text_area('Enter a combinatorics word problem to solve')
 if st.button('Solve a Problem'):
     if not text:
         st.text('Enter a problem to solve')
     else:
-        ai_response = solve_problem(
-            'Select the correct formula to solve the following combinatorics word problem. Then, calculate the answer and explain it in simple terms.\nProblem:' + text + '\nSolution:')
+        ai_response = label_problem(text,
+                                    'Problem:' + text + 'Identify which of the following six categories this problem falls under and output it as a response.\n1. Permutations of distinct objects\n2. Permutations of indistinct objects\n3. Combinations of distinct objects\n4. Bucketing with distinct objects\n5. Bucketing with indistinct objects\n6. Bucketing into fix sized containers\n7. None of the above\n\nResponse: ')
         st.write(ai_response)
 
 
 option = st.selectbox(
-    'Generate a combinatorics word problem',
-    ('multiplication principle', 'probability', 'combinatorial number', 'variations', 'permutations', 'combinations with repitition', 'permutations with repitition'))
+    'Select a combinatorics topic to generate a problem',
+    ('Permutations of distinct objects', 'Permutations of indistinct objects', 'Combinations of distinct objects', 'Bucketing with distinct objects', 'Bucketing with indistinct objects', 'Bucketing into fix sized containers'))
 
-if st.button('Generate Combinatorics Word Problem'):
+if st.button('Generate Problem'):
 
     if not option:
         st.text('Enter a capability')
